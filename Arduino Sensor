@@ -1,0 +1,98 @@
+#include <Adafruit_NeoPixel.h> //Importamos la libreria para las tiras PixeLED
+
+
+#define PIN 2     // Donde ponemos las tiras PixeLED
+
+#define NUMPIXELS      16 // La cantidad de LEDs
+
+
+// Tiempo del delay, que nos permite ajustarlo según como lo veamos en la instalación
+
+Adafruit_NeoPixel pixels = Adafruit_NeoPixel(NUMPIXELS, PIN, NEO_GRB + NEO_KHZ800);int delayval = 100;
+
+
+int cm = 0;
+int Vcolor;
+
+
+//Función que devuelve el tiempo que viajo la onda en microsegundos
+
+long readUltrasonicDistance(int triggerPin, int echoPin)
+{
+  pinMode(triggerPin, OUTPUT);
+  digitalWrite(triggerPin, LOW);
+  delayMicroseconds(2);
+  digitalWrite(triggerPin, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(triggerPin, LOW);
+  pinMode(echoPin, INPUT);
+  return pulseIn(echoPin, HIGH);
+}
+
+void setup()
+{
+  pixels.begin();
+}
+
+void loop()
+{
+
+  //Solo si el sensor detecta algo dentro del 0 y los 39 cm aprox, se prenden las luces
+
+  if((readUltrasonicDistance(7, 7) > 0) && (readUltrasonicDistance(7, 7)<2250))
+  {
+
+    //Mapeo del tiempo de la onda hacia un valor de color
+    cm = map(readUltrasonicDistance(7, 7), 0, 2251, 255, 0);
+
+    //Variable que nos permite tener una paleta acotada pero variada
+
+    Vcolor = random(125,200);
+  }
+  else
+  {
+      cm = 0;
+    Vcolor = 0;
+  }
+  tira1();
+  tira2();
+  tira3();
+  tira4();
+ 
+  pixels.show(); // Mostramos los LEDs
+
+  delay(delayval);
+}
+
+//Funciones que recorren cada tira LED para pintarlas según la tira
+
+void tira1 ()
+{
+
+    //Generamos un for que recorra la tira y le indique a cada PixeLED cual es su color
+    for(int i = 0; i<4;i++)
+    {
+        pixels.setPixelColor(i, pixels.Color(cm,cm%125,0));
+    }
+}
+void tira2 ()
+{
+    for(int i = 4; i<8;i++)
+    {
+        pixels.setPixelColor(i, pixels.Color(Vcolor,cm%125,cm));
+    }
+}
+void tira3 ()
+{
+    for(int i = 8; i<12;i++)
+    {
+        pixels.setPixelColor(i, pixels.Color(cm,cm%125,Vcolor));
+    }
+}
+void tira4 ()
+{
+    for(int i = 12; i < 16; i++)
+    {
+        pixels.setPixelColor(i, pixels.Color(0,cm%125,cm));
+    }
+}
